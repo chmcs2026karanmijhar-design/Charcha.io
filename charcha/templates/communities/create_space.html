@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create a Space | Charcha.io</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen bg-[#080B14] text-slate-100 antialiased">
+
+    <!-- Navigation -->
+    <header class="border-b border-slate-800 bg-[#080B14]">
+        <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-5">
+            <a href="/" class="text-2xl font-extrabold tracking-tight">
+                Charcha<span class="text-blue-400">.io</span>
+            </a>
+
+            <nav class="flex flex-wrap items-center justify-end gap-4 text-sm text-slate-300">
+                <a href="/" class="transition hover:text-blue-400">Home</a>
+                <a href="{% url 'communities:spaces' %}"
+                   class="transition hover:text-blue-400">✦ Spaces</a>
+
+                {% if user.is_authenticated %}
+                    <a href="/notifications/" class="transition hover:text-blue-400">🔔 Notifications</a>
+                    <a href="{% url 'accounts:profile' user.username %}"
+                       class="transition hover:text-blue-400">👤 Profile</a>
+                {% else %}
+                    <a href="/accounts/login/" class="transition hover:text-blue-400">Log in</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="mx-auto max-w-3xl px-5 py-10 sm:py-14">
+
+        <a href="{% url 'communities:spaces' %}"
+           class="inline-flex items-center gap-2 text-sm text-blue-400 transition hover:text-blue-300">
+            <span>←</span> Back to all Spaces
+        </a>
+
+        <!-- Heading -->
+        <section class="mb-8 mt-8">
+            <div class="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-blue-900 bg-blue-950 text-3xl text-blue-300">
+                ✦
+            </div>
+
+            <p class="text-xs font-bold uppercase tracking-[0.25em] text-blue-400">
+                BUILD YOUR COMMUNITY
+            </p>
+
+            <h1 class="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">
+                Create a <span class="text-blue-400">Space.</span>
+            </h1>
+
+            <p class="mt-3 max-w-xl leading-7 text-slate-400">
+                Every great conversation starts somewhere. Create a place
+                where people can connect, ask questions, and share knowledge.
+            </p>
+        </section>
+
+        <!-- Form Card -->
+        <section class="rounded-2xl border border-slate-800 bg-[#111827] p-5 shadow-2xl sm:p-8">
+
+            <div class="mb-7 border-b border-slate-800 pb-5">
+                <h2 class="text-lg font-bold">Space details</h2>
+                <p class="mt-1 text-sm text-slate-400">
+                    Give your community a clear identity.
+                </p>
+            </div>
+
+            <!-- Django messages -->
+            {% if messages %}
+                <div class="mb-5 space-y-2">
+                    {% for message in messages %}
+                        <div class="rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-blue-300">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+
+                <!-- Space Name -->
+                <div>
+                    <label for="space-name"
+                           class="mb-2 block text-sm font-semibold text-slate-200">
+                        Space name <span class="text-blue-400">*</span>
+                    </label>
+
+                    <input
+                        id="space-name"
+                        type="text"
+                        name="name"
+                        maxlength="100"
+                        required
+                        placeholder="e.g. Python Developers"
+                        class="w-full rounded-xl border border-slate-700 bg-[#080B14] px-4 py-3.5 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                    >
+
+                    <p class="mt-2 text-xs text-slate-500">
+                        Choose a short, memorable name for your community.
+                    </p>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <div class="mb-2 flex items-center justify-between gap-3">
+                        <label for="space-description"
+                               class="block text-sm font-semibold text-slate-200">
+                            Description <span class="text-blue-400">*</span>
+                        </label>
+
+                        <span class="text-xs text-slate-500">Max 500 characters</span>
+                    </div>
+
+                    <textarea
+                        id="space-description"
+                        name="description"
+                        maxlength="500"
+                        rows="5"
+                        required
+                        placeholder="What is this Space about? Who should join, and what can members discuss?"
+                        class="w-full resize-y rounded-xl border border-slate-700 bg-[#080B14] px-4 py-3.5 text-sm leading-6 text-white outline-none transition placeholder:text-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                    ></textarea>
+
+                    <p class="mt-2 text-xs text-slate-500">
+                        A helpful description lets people know what to expect.
+                    </p>
+                </div>
+
+                <!-- Topic -->
+                <div>
+                    <label for="space-topic"
+                           class="mb-2 block text-sm font-semibold text-slate-200">
+                        Related topic
+                        <span class="font-normal text-slate-500">(optional)</span>
+                    </label>
+
+                    <select
+                        id="space-topic"
+                        name="topic"
+                        class="w-full rounded-xl border border-slate-700 bg-[#080B14] px-4 py-3.5 text-sm text-slate-200 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                    >
+                        <option value="">General Space — no specific topic</option>
+                        {% for topic in topics %}
+                            <option value="{{ topic.id }}">{{ topic.name }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <p class="mt-2 text-xs text-slate-500">
+                        Connecting a topic helps display related questions in your Space.
+                    </p>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col-reverse gap-3 border-t border-slate-800 pt-6 sm:flex-row sm:justify-end">
+                    <a href="{% url 'communities:spaces' %}"
+                       class="inline-flex items-center justify-center rounded-xl border border-slate-700 px-5 py-3 text-sm font-semibold text-slate-300 transition hover:bg-slate-800">
+                        Cancel
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-950/30 transition hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-[#111827]"
+                    >
+                        <span>✦</span> Create Space
+                    </button>
+                </div>
+
+            </form>
+        </section>
+
+        <!-- Footer Note -->
+        <p class="mt-6 text-center text-xs leading-6 text-slate-500">
+            Create a welcoming community. Share knowledge. Start meaningful conversations.
+        </p>
+
+    </main>
+</body>
+</html>

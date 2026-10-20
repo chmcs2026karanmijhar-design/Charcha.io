@@ -1,0 +1,184 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ space.name }} | Charcha.io</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen bg-[#080B14] text-slate-100 antialiased">
+
+    <!-- Navigation -->
+    <header class="border-b border-slate-800">
+        <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-5">
+            <a href="/" class="text-2xl font-extrabold tracking-tight">
+                Charcha<span class="text-blue-400">.io</span>
+            </a>
+
+            <nav class="flex flex-wrap items-center gap-4 text-sm text-slate-300">
+                <a href="/" class="hover:text-blue-400">Home</a>
+                <a href="{% url 'communities:spaces' %}" class="hover:text-blue-400">✦ Spaces</a>
+
+                {% if user.is_authenticated %}
+                    <a href="/notifications/" class="hover:text-blue-400">🔔 Notifications</a>
+                    <a href="{% url 'accounts:profile' user.username %}" class="hover:text-blue-400">👤 Profile</a>
+                {% else %}
+                    <a href="/accounts/login/" class="hover:text-blue-400">Log in</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main class="mx-auto max-w-5xl px-5 py-10">
+
+        <a href="{% url 'communities:spaces' %}"
+           class="text-sm text-blue-400 transition hover:text-blue-300">
+            ← All Spaces
+        </a>
+
+        <!-- Space Header -->
+        <section class="relative mt-6 overflow-hidden rounded-3xl border border-slate-800 bg-[#111827] p-6 sm:p-10">
+            <div class="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-blue-600/10 blur-3xl"></div>
+
+            <div class="relative">
+                <div class="flex h-16 w-16 items-center justify-center rounded-2xl border border-blue-900 bg-blue-950 text-3xl text-blue-300">
+                    ✦
+                </div>
+
+                <p class="mt-6 text-xs font-bold uppercase tracking-[0.22em] text-blue-400">
+                    CHARCHA.IO COMMUNITY
+                </p>
+
+                <h1 class="mt-3 break-words text-3xl font-extrabold tracking-tight sm:text-4xl">
+                    {{ space.name }}
+                </h1>
+
+                <p class="mt-4 max-w-3xl whitespace-pre-line text-base leading-7 text-slate-300">
+                    {{ space.description }}
+                </p>
+
+                <div class="mt-6 flex flex-wrap items-center gap-3 text-sm">
+                    <span class="rounded-full border border-slate-700 bg-slate-950 px-3 py-1.5 text-slate-300">
+                        {% if space.topic %}{{ space.topic.name }}{% else %}General Space{% endif %}
+                    </span>
+
+                    <span class="text-slate-400">
+                        {{ space.members.count }} member{{ space.members.count|pluralize }}
+                    </span>
+
+                    <span class="text-slate-500">
+                        Created by
+                        <a href="{% url 'accounts:profile' space.creator.username %}"
+                           class="text-blue-400 hover:text-blue-300">
+                            {{ space.creator.username }}
+                        </a>
+                    </span>
+                </div>
+
+                <!-- Join / Leave -->
+                <div class="mt-8">
+                    {% if user.is_authenticated %}
+                        <form method="post"
+                              action="{% url 'communities:toggle_space_membership' space.id %}">
+                            {% csrf_token %}
+
+                            <button type="submit"
+                                    class="{% if is_member %}border border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800{% else %}bg-blue-600 text-white shadow-lg shadow-blue-950/40 hover:bg-blue-500{% endif %} rounded-xl px-6 py-3 text-sm font-bold transition">
+                                {% if is_member %}
+                                    ✓ Joined · Leave Space
+                                {% else %}
+                                    + Join Space
+                                {% endif %}
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}"
+                           class="inline-block rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-blue-500">
+                            Log in to join
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <!-- Related Questions -->
+        <section class="mt-10">
+            <div class="mb-5 flex flex-wrap items-end justify-between gap-3">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-blue-400">
+                        KEEP EXPLORING
+                    </p>
+                    <h2 class="mt-2 text-2xl font-bold">Related questions</h2>
+                    <p class="mt-2 text-sm text-slate-400">
+                        Questions connected to this Space's topic.
+                    </p>
+                </div>
+
+                {% if space.topic %}
+                    <a href="{% url 'questions:topic_detail' space.topic.slug %}"
+                       class="text-sm text-blue-400 hover:text-blue-300">
+                        Explore topic →
+                    </a>
+                {% endif %}
+            </div>
+
+            <div class="space-y-4">
+                {% for question in questions %}
+                    <article class="rounded-2xl border border-slate-800 bg-[#111827] p-5 transition hover:border-slate-600 sm:p-6">
+                        <div class="flex items-start gap-4">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-950 font-bold text-blue-300">
+                                {{ question.author.username|first|upper }}
+                            </div>
+
+                            <div class="min-w-0 flex-1">
+                                <p class="text-xs text-slate-500">
+                                    Asked by
+                                    <a href="{% url 'accounts:profile' question.author.username %}"
+                                       class="text-blue-400 hover:text-blue-300">
+                                        {{ question.author.username }}
+                                    </a>
+                                </p>
+
+                                <a href="{% url 'questions:detail' question.id %}"
+                                   class="mt-2 block text-lg font-bold text-slate-100 transition hover:text-blue-400">
+                                    {{ question.title }}
+                                </a>
+
+                                <p class="mt-2 line-clamp-3 text-sm leading-6 text-slate-400">
+                                    {{ question.body }}
+                                </p>
+
+                                <a href="{% url 'questions:detail' question.id %}"
+                                   class="mt-4 inline-block text-sm font-semibold text-blue-400 hover:text-blue-300">
+                                    View discussion →
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                {% empty %}
+                    <div class="rounded-2xl border border-slate-800 bg-[#111827] px-6 py-12 text-center">
+                        <div class="text-3xl text-slate-500">◇</div>
+                        <h3 class="mt-4 text-lg font-bold">No related questions yet</h3>
+                        <p class="mt-2 text-sm text-slate-400">
+                            Questions associated with this Space's topic will appear here.
+                        </p>
+
+                        {% if space.topic %}
+                            <a href="{% url 'questions:ask' %}"
+                               class="mt-5 inline-block rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500">
+                                Ask a Question
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <footer class="mt-12 border-t border-slate-800 py-6 text-center text-xs text-slate-500">
+            Charcha.io · Explore ideas. Share knowledge.
+        </footer>
+    </main>
+</body>
+</html>

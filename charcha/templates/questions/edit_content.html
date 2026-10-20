@@ -1,0 +1,52 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit {{ content_type }} | Charcha.io</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-[#080B14] p-6 text-white">
+    <main class="mx-auto mt-10 max-w-2xl rounded-2xl border border-slate-700 bg-[#111827] p-6">
+        <h1 class="mb-6 text-2xl font-bold">Edit {{ content_type }}</h1>
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% if content_type == "question" %}
+            <label class="mb-2 block">Question title</label>
+            <input
+                type="text"
+                name="title"
+                maxlength="250"
+                required
+                value="{{ item.title }}"
+                class="mb-5 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white"
+            >
+            {% endif %}
+
+            <label class="mb-2 block">Content</label>
+            <textarea
+                name="body"
+                rows="7"
+                required
+                class="w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white"
+            >{{ item.body }}</textarea>
+
+            {% for message in messages %}
+            <p class="mt-3 text-sm text-red-400">{{ message }}</p>
+            {% endfor %}
+
+            <div class="mt-5 flex gap-3">
+                <button type="submit" class="rounded-lg bg-blue-600 px-5 py-2 font-semibold">
+                    Save changes
+                </button>
+                <button type="button" onclick="history.back()" class="rounded-lg bg-slate-700 px-5 py-2">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </main>
+</body>
+</html>

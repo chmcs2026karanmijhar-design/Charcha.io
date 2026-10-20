@@ -1,0 +1,304 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ profile_user.username }} | Charcha.io</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body {
+            background: #080B14;
+            color: #E5E7EB;
+        }
+
+        .panel {
+            background: #111827;
+            border: 1px solid #263044;
+        }
+
+        .panel:hover {
+            border-color: #344563;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+
+<header class="border-b border-slate-800">
+    <nav class="max-w-4xl mx-auto px-5 py-5 flex justify-between items-center">
+        <a href="{% url 'questions:home' %}" class="text-2xl font-bold">
+            Charcha<span class="text-blue-400">.io</span>
+        </a>
+
+        <div class="flex items-center gap-4 text-sm">
+            {% if user.is_authenticated %}
+                <a href="{% url 'notifications:list' %}"
+                   class="text-slate-300 hover:text-blue-400 transition">
+                    🔔 Notifications
+                </a>
+
+                <a href="{% url 'questions:bookmarks' %}"
+                   class="hidden sm:inline text-slate-300 hover:text-blue-400 transition">
+                    🔖 Bookmarks
+                </a>
+            {% endif %}
+        </div>
+    </nav>
+</header>
+
+<main class="max-w-4xl mx-auto px-5 py-8">
+
+    <a href="{% url 'questions:home' %}"
+       class="text-sm text-blue-400 hover:text-blue-300 transition">
+        ← Back to feed
+    </a>
+
+    {% for message in messages %}
+        <p class="mt-4 text-sm text-blue-300">{{ message }}</p>
+    {% endfor %}
+
+    <!-- PROFILE CARD -->
+    <section class="panel rounded-xl p-6 mt-5">
+
+        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+
+            <!-- PROFILE PICTURE -->
+            <div class="shrink-0">
+                {% if profile.profile_picture %}
+                    <img
+                        src="{{ profile.profile_picture.url }}"
+                        alt="{{ profile_user.username }}'s profile picture"
+                        class="w-24 h-24 rounded-full object-cover border-2 border-blue-400"
+                    >
+                {% else %}
+                    <div class="w-24 h-24 rounded-full bg-blue-950 border-2 border-blue-400
+                                flex items-center justify-center text-3xl font-bold text-blue-300">
+                        {{ profile_user.username|first|upper }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- PROFILE DETAILS -->
+            <div class="flex-1 min-w-0 w-full text-center sm:text-left">
+
+                <h1 class="text-3xl font-bold break-words">
+                    {{ profile_user.username }}
+                </h1>
+
+                <p class="text-sm text-slate-400 mt-2">
+                    Member since {{ profile_user.date_joined|date:"F Y" }}
+                </p>
+
+                <p class="mt-4 text-slate-300 whitespace-pre-line break-words">
+                    {% if profile.bio %}
+                        {{ profile.bio }}
+                    {% else %}
+                        This user hasn't added a bio yet.
+                    {% endif %}
+                </p>
+                
+{% if profile.credentials %}
+    <p class="text-slate-300 mt-2">{{ profile.credentials }}</p>
+{% endif %}
+
+{% if profile.location %}
+    <p class="text-slate-400 mt-1">📍 {{ profile.location }}</p>
+{% endif %}
+
+
+                <!-- FOLLOWER COUNTS -->
+                <div class="flex flex-wrap items-center justify-center sm:justify-start gap-5 mt-5">
+
+                    <div>
+                        <span class="font-bold text-white">
+                            {{ follower_count }}
+                        </span>
+                        <span class="text-sm text-slate-400">Followers</span>
+                    </div>
+
+                    <div>
+                        <span class="font-bold text-white">
+                            {{ following_count }}
+                        </span>
+                        <span class="text-sm text-slate-400">Following</span>
+                    </div>
+
+                </div>
+
+                <!-- PROFILE ACTIONS -->
+                <div class="mt-5 flex flex-wrap justify-center sm:justify-start gap-3">
+
+                    {% if user.is_authenticated and user.id == profile_user.id %}
+
+                        <a href="{% url 'accounts:edit_profile' %}"
+                           class="inline-block rounded-lg bg-blue-600 hover:bg-blue-500
+                                  px-4 py-2 text-sm transition">
+                            Edit profile
+                        </a>
+
+                    {% elif user.is_authenticated %}
+
+                        <form method="post"
+                              action="{% url 'accounts:toggle_follow' profile_user.username %}">
+                            {% csrf_token %}
+
+                            <button type="submit"
+                                    class="{% if is_following %}border border-slate-600 text-slate-200 hover:bg-slate-800{% else %}bg-blue-600 text-white hover:bg-blue-500{% endif %} rounded-lg px-5 py-2 text-sm transition">
+                                {% if is_following %}
+                                    Unfollow
+                                {% else %}
+                                    + Follow
+                                {% endif %}
+                            </button>
+                        </form>
+
+                    {% else %}
+
+                        <a href="{% url 'accounts:login' %}"
+                           class="inline-block rounded-lg bg-blue-600 hover:bg-blue-500
+                                  px-4 py-2 text-sm transition">
+                            Log in to follow
+                        </a>
+
+                    {% endif %}
+
+                </div>
+                
+{% if user.is_authenticated and user != profile.user %}
+<form method="post"
+      action="{% url 'accounts:toggle_block' profile.user.username %}">
+    {% csrf_token %}
+    <button type="submit"
+            class="rounded-lg border border-red-800 px-4 py-2 text-sm text-red-300 hover:bg-red-950">
+        {% if is_blocked %}
+            Unblock User
+        {% else %}
+            Block User
+        {% endif %}
+    </button>
+</form>
+{% endif %}
+
+
+            </div>
+        </div>
+
+        <!-- QUESTION AND ANSWER COUNTS -->
+        <div class="grid grid-cols-2 gap-4 mt-7 border-t border-slate-800 pt-5">
+
+            <div>
+                <p class="text-2xl font-bold">{{ questions.count }}</p>
+                <p class="text-sm text-slate-400">Questions</p>
+            </div>
+
+            <div>
+                <p class="text-2xl font-bold">{{ answers.count }}</p>
+                <p class="text-sm text-slate-400">Answers</p>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- QUESTIONS SECTION -->
+    <section class="mt-8">
+
+        <h2 class="text-xl font-bold mb-4">
+            Questions by {{ profile_user.username }}
+        </h2>
+
+        {% for question in questions %}
+
+            <article class="panel rounded-xl p-5 mb-4">
+
+                <h3 class="text-lg font-semibold break-words">
+                    <a href="{% url 'questions:detail' question.id %}"
+                       class="hover:text-blue-400 transition">
+                        {{ question.title }}
+                    </a>
+                </h3>
+
+                <p class="mt-2 text-slate-400 whitespace-pre-line break-words">
+                    {{ question.body|truncatewords:35 }}
+                </p>
+
+                {% if question.topics.exists %}
+                    <div class="flex flex-wrap gap-2 mt-3">
+                        {% for topic in question.topics.all %}
+                            <a href="{% url 'questions:topic_detail' topic.slug %}"
+                               class="text-xs bg-blue-950 text-blue-300 rounded-full px-3 py-1 hover:bg-blue-900 transition">
+                                {{ topic.name }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <p class="mt-3 text-sm text-slate-500">
+                    {{ question.answers.count }} answers ·
+                    {{ question.created_at|timesince }} ago
+                </p>
+
+            </article>
+
+        {% empty %}
+
+            <div class="panel rounded-xl p-5 text-slate-400">
+                No questions posted yet.
+            </div>
+
+        {% endfor %}
+
+    </section>
+
+    <!-- ANSWERS SECTION -->
+    <section class="mt-8">
+
+        <h2 class="text-xl font-bold mb-4">
+            Answers by {{ profile_user.username }}
+        </h2>
+
+        {% for answer in answers %}
+
+            <article class="panel rounded-xl p-5 mb-4">
+
+                <p class="text-xs text-blue-300">
+                    Answer to:
+                </p>
+
+                <h3 class="font-semibold mt-1 break-words">
+                    <a href="{% url 'questions:detail' answer.question_id %}"
+                       class="hover:text-blue-400 transition">
+                        {{ answer.question.title }}
+                    </a>
+                </h3>
+
+                <p class="mt-3 text-slate-300 whitespace-pre-line break-words">
+                    {{ answer.body|truncatewords:45 }}
+                </p>
+
+                <p class="mt-3 text-xs text-slate-500">
+                    {{ answer.created_at|timesince }} ago
+                </p>
+
+            </article>
+
+        {% empty %}
+
+            <div class="panel rounded-xl p-5 text-slate-400">
+                No answers posted yet.
+            </div>
+
+        {% endfor %}
+
+    </section>
+
+</main>
+
+<footer class="text-center text-slate-500 text-sm py-6 mt-8 border-t border-slate-900">
+    Charcha.io · A universe of ideas
+</footer>
+
+</body>
+</html>

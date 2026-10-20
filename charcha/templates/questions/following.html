@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Following | Charcha.io</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #080B14; color: #E5E7EB; }
+        .panel { background: #111827; border: 1px solid #263044; }
+        .panel:hover { border-color: #344563; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<header class="border-b border-slate-800">
+    <nav class="max-w-5xl mx-auto px-5 py-4 flex justify-between items-center">
+        <a href="{% url 'questions:home' %}" class="text-2xl font-bold">
+            Charcha<span class="text-blue-400">.io</span>
+        </a>
+
+        <div class="flex gap-4 text-sm">
+            <a href="{% url 'notifications:list' %}"
+               class="text-slate-300 hover:text-blue-400">
+                🔔 Notifications
+                {% if unread_count > 0 %}
+                    <span class="text-red-400 font-bold">{{ unread_count }}</span>
+                {% endif %}
+            </a>
+            <a href="{% url 'questions:bookmarks' %}"
+               class="text-slate-300 hover:text-blue-400">
+                🔖 Bookmarks
+            </a>
+        </div>
+    </nav>
+</header>
+
+<main class="max-w-5xl mx-auto w-full px-5 py-8 flex-grow">
+
+    <a href="{% url 'questions:home' %}"
+       class="text-sm text-blue-400 hover:text-blue-300">
+        ← Back to home
+    </a>
+
+    <h1 class="text-3xl font-bold mt-5">
+        Following <span class="text-blue-400">Feed</span>
+    </h1>
+
+    <p class="text-slate-400 mt-2 mb-7">
+        Latest questions from people you follow.
+    </p>
+
+    {% for question in questions %}
+        <article class="panel rounded-xl p-5 mb-4">
+
+            <p class="text-xs text-slate-500 mb-3">
+                <a href="{% url 'accounts:profile' question.author.username %}"
+                   class="text-blue-300 hover:text-blue-400">
+                    {{ question.author.username }}
+                </a>
+                · {{ question.created_at|timesince }} ago
+            </p>
+
+            <h2 class="text-xl font-semibold break-words">
+                <a href="{% url 'questions:detail' question.id %}"
+                   class="hover:text-blue-400">
+                    {{ question.title }}
+                </a>
+            </h2>
+
+            <p class="text-slate-400 mt-3 whitespace-pre-line break-words">
+                {{ question.body|truncatewords:45 }}
+            </p>
+
+            {% if question.topics.exists %}
+                <div class="flex flex-wrap gap-2 mt-4">
+                    {% for topic in question.topics.all %}
+                        <a href="{% url 'questions:topic_detail' topic.slug %}"
+                           class="text-xs bg-blue-950 text-blue-300 rounded-full px-3 py-1">
+                            {{ topic.name }}
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if question.image %}
+                <img src="{{ question.image.url }}"
+                     alt="Question attachment"
+                     loading="lazy"
+                     class="mt-4 rounded-xl max-h-96 max-w-full object-contain">
+            {% endif %}
+
+            <div class="border-t border-slate-800 mt-5 pt-4 flex justify-between gap-3">
+                <a href="{% url 'questions:detail' question.id %}"
+                   class="text-sm text-slate-400 hover:text-blue-400">
+                    {{ question.answers.count }} answers · View discussion →
+                </a>
+
+                {% if question.id in bookmarked_ids %}
+                    <span class="text-sm text-blue-300">🔖 Saved</span>
+                {% endif %}
+            </div>
+
+        </article>
+    {% empty %}
+        <div class="panel rounded-xl p-8 text-center">
+            <div class="text-4xl mb-4">◉</div>
+            <h2 class="text-xl font-semibold">Your feed is quiet</h2>
+            <p class="text-slate-400 mt-3">
+                Follow people to see their questions here.
+            </p>
+            <a href="{% url 'questions:home' %}"
+               class="inline-block mt-5 bg-blue-600 hover:bg-blue-500 rounded-lg px-4 py-2">
+                Explore questions
+            </a>
+        </div>
+    {% endfor %}
+
+</main>
+
+<footer class="text-center text-slate-500 text-sm py-6 border-t border-slate-900">
+    Charcha.io · A universe of ideas
+</footer>
+
+</body>
+</html>
